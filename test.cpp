@@ -3,7 +3,7 @@
 
 #include "struct2log.h"
 using namespace std;
-using namespace struct2log;
+using namespace struct2log_interface;
 
 struct MyClass
 {

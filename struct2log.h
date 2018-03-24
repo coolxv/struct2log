@@ -47,13 +47,13 @@ private:\
     { return struct2log_impl::injection_helper::serialize_value (vec, __VA_ARGS__); }\
 private:\
     constexpr static const char *__key_field_name = "_aid";\
-    inline std::vector<std::string> &__pk_types(std::vector<std::string> &vec)\
+    inline std::vector<std::string> &__pk_type(std::vector<std::string> &vec)\
     { return struct2log_impl::injection_helper::serialize_type (vec, (unsigned long)this); }\
-    inline std::vector<std::string> &__pk_types(std::vector<std::string> &vec) const\
+    inline std::vector<std::string> &__pk_type(std::vector<std::string> &vec) const\
     { return struct2log_impl::injection_helper::serialize_type (vec, (unsigned long)this); }\
-    inline std::vector<std::string> &__pk_values(std::vector<std::string> &vec)\
+    inline std::vector<std::string> &__pk_value(std::vector<std::string> &vec)\
     { return struct2log_impl::injection_helper::serialize_value (vec, (unsigned long)this); }\
-    inline std::vector<std::string> &__pk_values(std::vector<std::string> &vec) const\
+    inline std::vector<std::string> &__pk_value(std::vector<std::string> &vec) const\
     { return struct2log_impl::injection_helper::serialize_value (vec, (unsigned long)this); }\
 
 
@@ -72,7 +72,7 @@ private:\
 #define STRUCT2LOG_BUF_SIZE 1024
 #define STRUCT2LOG_PROCESS_NAEME_SIZE 128
 #define STRUCT2LOG_DATE_BUF_SIZE 64
-#define STRUCT2LOG_LOG_FILE "../log/%s_%s_%s_%s.mdblog"
+#define STRUCT2LOG_LOG_FILE "./%s_%s_%s_%s.log"
 #define STRUCT2LOG_EXT_CONNECTOR "STRUCT2LOG_EXT_CONNECTOR"
 #define STRUCT2LOG_EXT_CONNECTOR_INIT "__connector_init__"
 #define STRUCT2LOG_EXT_LOG_PATH_PATTERN "STRUCT2LOG_EXT_LOG_PATH_PATTERN"
@@ -372,6 +372,16 @@ namespace struct2log_impl
             vec.push_back(std::to_string(value));
             return vec;
         }
+        static inline std::vector<std::string> &serialize_value_ss (std::vector<std::string> &vec, float value)
+        {
+            vec.push_back(std::to_string(value));
+            return vec;
+        }
+        static inline std::vector<std::string> &serialize_value_ss (std::vector<std::string> &vec, double value)
+        {
+            vec.push_back(std::to_string(value));
+            return vec;
+        }
         //Type
         template <typename T>
         static inline std::vector<std::string> &serialize_type (std::vector<std::string> &vec, const T &)
@@ -441,7 +451,7 @@ namespace struct2log_impl
 
         // Key Field Type Proxy
         template <typename C>
-        static inline std::vector<std::string> field_pk_type (const C &obj)
+        static inline std::string field_pk_type (const C &obj)
         {
             std::vector<std::string> vec;
             obj.__pk_type(vec);
@@ -449,7 +459,7 @@ namespace struct2log_impl
         }
         // Key Field value Proxy
         template <typename C>
-        static inline std::vector<std::string> field_pk_value (const C &obj)
+        static inline std::string field_pk_value (const C &obj)
         {
             std::vector<std::string> vec;
             obj.__pk_value(vec);
@@ -460,7 +470,7 @@ namespace struct2log_impl
 }
 
 
-namespace struct2log
+namespace struct2log_interface
 {
 
     //struct2log
@@ -647,7 +657,8 @@ namespace struct2log
                         handle_ = dlopen(env, RTLD_NOW | RTLD_GLOBAL);
                         if(nullptr != handle_)
                         {
-                            struct2log_impl::struct2log_connector* (create_connector)(std::string&);
+                            struct2log_impl::struct2log_connector* (*create_connector)(std::string&);
+                            create_connector = (struct2log_impl::struct2log_connector*(*)(std::string&))dlsym(handle_, STRUCT2LOG_EXT_CONNECTOR_INIT);
                             if(nullptr != create_connector)
                             {
                                 connector_.reset(create_connector(name_));
