@@ -1,5 +1,5 @@
 TARGET = test
-SOURCES = test.cpp
+SOURCES = test_log.cpp
 WARNINGFLAGS = -Wall -W
 CPPFLAGS = -g -std=c++11 -DSTRUCT2LOG_DEBUG
 LINKS = -lpthread -ldl
